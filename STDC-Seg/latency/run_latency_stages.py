@@ -7,7 +7,7 @@ import torch
 import numpy as np
 
 from thop import profile
-sys.path.append("../")
+sys.path.append("./")
 
 from utils.darts_utils import create_exp_dir, plot_op, plot_path_width, objective_acc_lat
 try:
@@ -42,11 +42,11 @@ def main():
     n_classes = 19
     
     # STDC1Seg-50 250.4FPS on NVIDIA GTX 1080Ti
-    # backbone = 'STDCNet813'
-    # methodName = 'STDC1-Seg'
-    # inputSize = 512
-    # inputScale = 50
-    # inputDimension = (1, 3, 512, 1024)
+    backbone = 'STDCNet813'
+    methodName = 'STDC1-Seg'
+    inputSize = 512
+    inputScale = 50
+    inputDimension = (1, 3, 512, 1024)
 
     # # STDC1Seg-75 126.7FPS on NVIDIA GTX 1080Ti
     # backbone = 'STDCNet813'
@@ -56,11 +56,11 @@ def main():
     # inputDimension = (1, 3, 768, 1536)
 
     # # STDC2Seg-50 188.6FPS on NVIDIA GTX 1080Ti
-    backbone = 'STDCNet1446'
-    methodName = 'STDC2-Seg'
-    inputSize = 512
-    inputScale = 50
-    inputDimension = (1, 3, 512, 1024)
+    # backbone = 'STDCNet1446'
+    # methodName = 'STDC2-Seg'
+    # inputSize = 512
+    # inputScale = 50
+    # inputDimension = (1, 3, 512, 1024)
 
     # # STDC2Seg-75 97.0FPS on NVIDIA GTX 1080Ti
     # backbone = 'STDCNet1446'
@@ -76,7 +76,7 @@ def main():
     
 
     print('loading parameters...')
-    respth = '../checkpoints/{}/'.format(methodName)
+    respth = './checkpoints/{}/'.format(methodName)
     save_pth = os.path.join(respth, 'model_maxmIOU{}.pth'.format(inputScale))
     model.load_state_dict(torch.load(save_pth))
     model = model.cuda()

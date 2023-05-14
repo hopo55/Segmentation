@@ -4,7 +4,7 @@ __pycache__/
 *$py.class
 
 # saves model files
-saves
+checkpoints
 
 # C extensions
 *.so
