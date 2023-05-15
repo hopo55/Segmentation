@@ -5,6 +5,9 @@ import torch.nn as nn
 import torch.nn.functional as F
 import torchvision
 
+import sys
+sys.path.append("./")
+
 from nets.stdcnet import STDCNet1446, STDCNet813
 BatchNorm2d = nn.BatchNorm2d
 
@@ -348,6 +351,9 @@ class BiSeNet(nn.Module):
         elif self.input_size == 720:
             self.H = torch.tensor(720)
             self.W = torch.tensor(960)
+        elif self.input_size == 492:
+            self.H = torch.tensor(492)
+            self.W = torch.tensor(658)
         else:
             print("input_size is not in input_size lists")
             exit(0)

@@ -2,6 +2,7 @@ from __future__ import division
 
 import os
 import sys
+import random
 import logging
 import torch
 import numpy as np
@@ -27,11 +28,6 @@ def main():
     # preparation ################
     torch.backends.cudnn.enabled = True
     torch.backends.cudnn.benchmark = True
-    seed = 12345
-    np.random.seed(seed)
-    torch.manual_seed(seed)
-    if torch.cuda.is_available():
-        torch.cuda.manual_seed(seed)
     
     # Configuration ##############
     use_boundary_2 = False
@@ -68,23 +64,38 @@ def main():
     # inputSize = 768
     # inputScale = 75
     # inputDimension = (1, 3, 768, 1536)
-    
-    model = BiSeNet(backbone=backbone, n_classes=n_classes, 
-    use_boundary_2=use_boundary_2, use_boundary_4=use_boundary_4, 
-    use_boundary_8=use_boundary_8, use_boundary_16=use_boundary_16, 
-    input_size=inputSize, use_conv_last=use_conv_last)
-    
 
-    print('loading parameters...')
-    respth = './checkpoints/{}/'.format(methodName)
-    save_pth = os.path.join(respth, 'model_maxmIOU{}.pth'.format(inputScale))
-    model.load_state_dict(torch.load(save_pth))
-    model = model.cuda()
-    #####################################################
+    numbers = list(range(1, 12346))  # 1부터 12345까지의 숫자 리스트 생성
+    random_numbers = random.sample(numbers, 521)  # 리스트에서 10개의 무작위 숫자 추출
+    total_latency = 0
 
-    latency = compute_latency(model, inputDimension)
-    print("{}{} FPS:".format(methodName, inputScale) + str(1000./latency))
-    logging.info("{}{} FPS:".format(methodName, inputScale) + str(1000./latency))
+    for seed in random_numbers:
+        # seed = 12345
+        np.random.seed(seed)
+        torch.manual_seed(seed)
+        if torch.cuda.is_available():
+            torch.cuda.manual_seed(seed)
+        
+        model = BiSeNet(backbone=backbone, n_classes=n_classes, 
+        use_boundary_2=use_boundary_2, use_boundary_4=use_boundary_4, 
+        use_boundary_8=use_boundary_8, use_boundary_16=use_boundary_16, 
+        input_size=inputSize, use_conv_last=use_conv_last)
+
+        print('loading parameters...')
+        respth = './checkpoints/{}/'.format(methodName)
+        save_pth = os.path.join(respth, 'model_maxmIOU{}.pth'.format(inputScale))
+        model.load_state_dict(torch.load(save_pth))
+        model = model.cuda()
+        #####################################################
+
+        # latency, total_latency = compute_latency(model, inputDimension)
+        latency = compute_latency(model, inputDimension, iterations=70)
+        # latency, total_latency = compute_latency(model, inputDimension, iterations=35564)
+        total_latency += latency
+
+    latency = total_latency / 521
+    print("{}{} FPS:{:.2f}".format(methodName, inputScale, (1000./latency)))
+    print("{}{} Latency:{:.2f}ms / {:.4f}s".format(methodName, inputScale, latency, (latency/1000.)))
 
     # calculate FLOPS and params
     '''
