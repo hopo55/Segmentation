@@ -163,8 +163,8 @@ def main(args):
 if __name__ == '__main__':
     parser = ArgumentParser()
     parser.add_argument('--model', default="ESPNet", help='Model name')
-    parser.add_argument('--data_dir', default="./data", help='Data directory')
-    parser.add_argument('--img_extn', default="png", help='RGB Image format')
+    parser.add_argument('--data_dir', default="./data", help='Data directory')  ##############
+    parser.add_argument('--img_extn', default="png", help='RGB Image format')   ###########
     parser.add_argument('--inWidth', type=int, default=1024, help='Width of RGB image')
     parser.add_argument('--inHeight', type=int, default=512, help='Height of RGB image')
     parser.add_argument('--scaleIn', type=int, default=1, help='For ESPNet-C, scaleIn=8. For ESPNet, scaleIn=1')

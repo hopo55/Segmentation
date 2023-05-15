@@ -38,10 +38,10 @@ sys.path.append(os.path.join(os.getcwd()))
 sys.path.append(os.path.join(os.getcwd(), '../'))
 
 parser = argparse.ArgumentParser(description='evaluation')
-parser.add_argument('--dump_images', action='store_true', default=False)
-parser.add_argument('--arch', type=str, default='', required=True)
+parser.add_argument('--dump_images', action='store_true', default=False)    ##########
+parser.add_argument('--arch', type=str, default='', required=True)  ######
 parser.add_argument('--single_scale', action='store_true', default=False)
-parser.add_argument('--scales', type=str, default='0.5,1.0,2.0')
+parser.add_argument('--scales', type=str, default='0.5,1.0,2.0')    ########
 parser.add_argument('--dist_bn', action='store_true', default=False)
 parser.add_argument('--profile', action='store_true', default=False)
 parser.add_argument('--fixed_aspp_pool', action='store_true', default=False,
@@ -50,22 +50,22 @@ parser.add_argument('--fixed_aspp_pool', action='store_true', default=False,
 parser.add_argument('--sliding_overlap', type=float, default=1 / 3)
 parser.add_argument('--no_flip', action='store_true', default=False,
                     help='disable flipping')
-parser.add_argument('--dataset', type=str, default='cityscapes',
+parser.add_argument('--dataset', type=str, default='cityscapes',    #####
                     help='cityscapes, video_folder')
 parser.add_argument('--dataset_cls', type=str, default='cityscapes', help='cityscapes')
 parser.add_argument('--trunk', type=str, default='resnet101', help='cnn trunk')
 parser.add_argument('--dataset_dir', type=str, default=None,
                     help='Dataset Location')
-parser.add_argument('--split', type=str, default='val')
+parser.add_argument('--split', type=str, default='val')     #########
 parser.add_argument('--crop_size', type=int, default=832)
 parser.add_argument('--exp_name', type=str, default=None)
-parser.add_argument('--snapshot', required=True, type=str, default='')
-parser.add_argument('--ckpt_path', type=str, default=None)
-parser.add_argument('-im', '--inference_mode', type=str, default='sliding',
+parser.add_argument('--snapshot', required=True, type=str, default='')  #############
+parser.add_argument('--ckpt_path', type=str, default=None)  #######
+parser.add_argument('-im', '--inference_mode', type=str, default='sliding',     ######
                     help='sliding or pooling')
 parser.add_argument('--test_mode', action='store_true', default=False,
                     help='minimum testing (4 items evaluated) to verify nothing failed')
-parser.add_argument('--cv_split', type=int, default=None)
+parser.add_argument('--cv_split', type=int, default=None)       #########
 parser.add_argument('--mode', type=str, default='fine')
 parser.add_argument('--split_index', type=int, default=0)
 parser.add_argument('--split_count', type=int, default=1)
