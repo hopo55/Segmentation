@@ -11,7 +11,8 @@ def Norm2d(in_channels):
     """
     Custom Norm Function to allow flexible switching
     """
-    layer = getattr(cfg.MODEL, 'BNFUNC')
+    # layer = getattr(cfg.MODEL, 'BNFUNC')
+    layer = nn.BatchNorm2d
     normalization_layer = layer(in_channels)
     return normalization_layer
 

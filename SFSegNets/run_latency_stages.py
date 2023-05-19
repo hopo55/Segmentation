@@ -5,7 +5,7 @@ import numpy as np
 from darts_utils import compute_latency_ms_pytorch as compute_latency
 print("use PyTorch for latency test")
 import random
-from Model import ESPNet
+from network.sfnet_resnet import DeepR101_SF_deeply
 
 def main():
     print("begin")
@@ -14,17 +14,22 @@ def main():
     torch.backends.cudnn.benchmark = True
     
     # Configuration ##############
-    n_classes = 20
+    n_classes = 30
     p = 2
     q = 8
     inputDimension = (1, 3, 512, 672)
+
+    seed = 12345
+    np.random.seed(seed)
+    torch.manual_seed(seed)
+    if torch.cuda.is_available():
+        torch.cuda.manual_seed(seed)
     
-    model = ESPNet(n_classes, p, q)
+    model = DeepR101_SF_deeply(n_classes, criterion=None)
 
     print('loading parameters...')
-    weightsDir = 'pretrained/'
-    save_pth = weightsDir + os.sep + 'decoder' + os.sep + 'espnet_p_' + str(p) + '_q_' + str(q) + '.pth'
-    model.load_state_dict(torch.load(save_pth))
+    # model.load_state_dict(torch.load(save_pth))
+    model = model.cuda()
     #####################################################
 
     latency_list = []

@@ -130,13 +130,15 @@ class ContextPath(nn.Module):
 
         if self.input_size == 512:
             self.H8 = torch.tensor(64)
-            self.W8 = torch.tensor(128)
+            self.W8 = torch.tensor(84)
 
             self.H16 = torch.tensor(32)
-            self.W16 = torch.tensor(64)
+            # self.W16 = torch.tensor(64)
+            self.W16 = torch.tensor(42)
 
             self.H32 = torch.tensor(16)
-            self.W32 = torch.tensor(32)
+            # self.W32 = torch.tensor(32)
+            self.W32 = torch.tensor(21)
         elif self.input_size == 768:
             self.H8 = torch.tensor(96)
             self.W8 = torch.tensor(192)

@@ -19,7 +19,6 @@ def compute_latency_ms_pytorch(model, input_size, iterations=None, device=None):
             while elapsed_time < 1:
                 torch.cuda.synchronize()
                 torch.cuda.synchronize()
-                model(input)
                 t_start = time.time()
                 for _ in range(iterations):
                     model(input)
