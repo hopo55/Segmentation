@@ -3,14 +3,8 @@ __pycache__/
 *.py[cod]
 *$py.class
 
-# data path
-data
-label
-*.zip
-*.jpg
-*.png
-*.pth
-src
+# saves model files
+checkpoints
 
 # C extensions
 *.so
