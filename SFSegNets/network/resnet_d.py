@@ -203,8 +203,12 @@ def resnet101(pretrained=False, **kwargs):
     """
     model = ResNet(Bottleneck, [3, 4, 23, 3], **kwargs)
     if pretrained:
+<<<<<<< HEAD
         # model.load_state_dict(torch.load("./pretrained_models/resnet101-deep.pth",map_location='cpu'))
         model.load_state_dict(torch.load("./pretrained_models/resnet101-deep.pth",map_location='cpu'), strict=False)
+=======
+        model.load_state_dict(torch.load("./pretrained_models/resnet101-deep.pth",map_location='cpu'))
+>>>>>>> 61a40ddc70810f9a788ef56cfd1db70ead09137f
     return model
 
 

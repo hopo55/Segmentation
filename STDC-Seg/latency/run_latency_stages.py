@@ -82,9 +82,14 @@ def main():
 
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
     # latency, total_latency = compute_latency(model, inputDimension)
     latency = compute_latency(model, inputDimension, iterations=70)
     # latency = compute_latency(model, inputDimension, iterations=35564)
+=======
+    numbers = list(range(1, 12346))  # 1부터 12345까지의 숫자 리스트 생성
+    random_numbers = random.sample(numbers, 77)  # 리스트에서 10개의 무작위 숫자 추출
+>>>>>>> 61a40ddc70810f9a788ef56cfd1db70ead09137f
 =======
     numbers = list(range(1, 12346))  # 1부터 12345까지의 숫자 리스트 생성
     random_numbers = random.sample(numbers, 77)  # 리스트에서 10개의 무작위 숫자 추출

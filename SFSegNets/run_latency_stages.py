@@ -6,7 +6,11 @@ from darts_utils import compute_latency_ms_pytorch as compute_latency
 print("use PyTorch for latency test")
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 
+=======
+import random
+>>>>>>> 61a40ddc70810f9a788ef56cfd1db70ead09137f
 =======
 import random
 >>>>>>> 61a40ddc70810f9a788ef56cfd1db70ead09137f
@@ -42,6 +46,7 @@ def main():
 
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
     # latency, total_latency = compute_latency(model, inputDimension)
     latency = compute_latency(model, inputDimension, iterations=70)
     # latency = compute_latency(model, inputDimension, iterations=35564)
@@ -50,6 +55,8 @@ def main():
     print("{} FPS:{:.2f}".format(methodName, (1000./latency)))
     print("{} Latency:{:.2f}ms / {:.4f}s".format(methodName, latency, (latency/1000.)))
 =======
+=======
+>>>>>>> 61a40ddc70810f9a788ef56cfd1db70ead09137f
 =======
 >>>>>>> 61a40ddc70810f9a788ef56cfd1db70ead09137f
     latency_list = []
@@ -81,6 +88,9 @@ def main():
     print(std_fps)
     len(latency_list)
 <<<<<<< HEAD
+<<<<<<< HEAD
+>>>>>>> 61a40ddc70810f9a788ef56cfd1db70ead09137f
+=======
 >>>>>>> 61a40ddc70810f9a788ef56cfd1db70ead09137f
 =======
 >>>>>>> 61a40ddc70810f9a788ef56cfd1db70ead09137f

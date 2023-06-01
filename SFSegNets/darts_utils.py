@@ -34,6 +34,10 @@ def compute_latency_ms_pytorch(model, input_size, iterations=None, device=None):
         torch.cuda.synchronize()
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+        model(input)
+>>>>>>> 61a40ddc70810f9a788ef56cfd1db70ead09137f
 =======
         model(input)
 >>>>>>> 61a40ddc70810f9a788ef56cfd1db70ead09137f
