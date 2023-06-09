@@ -49,12 +49,13 @@ def get_target(image_path):
     upper_green = np.array([85, 255, 255])
 
     green_mask = find_color(image, lower_green, upper_green)
-    if np.count_nonzero(green_mask) < 10:
+    if np.count_nonzero(green_mask) < 15:
         return print(folder_name + '/' + file_name + ' pass')
 
     cut_img = cut_image(image, green_mask)
-    output_path = 'green_image.jpg'
-    cv2.imwrite(output_path, cut_img)
+    # output_path = 'green_image.jpg'
+    # cv2.imwrite(output_path, cut_img)
+    print(cut_img.shape)
 
     # Blue
     lower_blue = np.array([110, 50, 50])
