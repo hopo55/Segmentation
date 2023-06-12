@@ -10,6 +10,7 @@ label
 *.jpg
 *.png
 *.pth
+*.tif
 src
 
 # C extensions
