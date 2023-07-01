@@ -121,7 +121,7 @@ parser.add_argument('--num_workers', type=int, default=8)
 parser.add_argument('--split', type=int, default=0.8)
 # Model Settings
 parser.add_argument('--epoch', type=int, default=30)
-parser.add_argument('--lr', '--learning_rate', type=float, default=0.01)
+parser.add_argument('--lr', '--learning_rate', type=float, default=0.001)
 
 args = parser.parse_args()
 
@@ -160,8 +160,8 @@ def main():
     test_loader = DataLoader(test_dataset, batch_size=args.test_size, shuffle=False, num_workers=args.num_workers)
 
     loss = smp.losses.DiceLoss('binary')
-    optimizer = torch.optim.SGD(model.parameters(), lr=args.lr, momentum=0.9, weight_decay=1e-5)
-    # optimizer = torch.optim.Adam(model.parameters(), lr=args.lr)
+    # optimizer = torch.optim.SGD(model.parameters(), lr=args.lr, momentum=0.9, weight_decay=1e-5)
+    optimizer = torch.optim.Adam(model.parameters(), lr=args.lr)
     lr_scheduler = torch.optim.lr_scheduler.CosineAnnealingWarmRestarts(optimizer, T_0=1, T_mult=2, eta_min=5e-5,)
 
     for epoch in range(1, args.epoch + 1):
