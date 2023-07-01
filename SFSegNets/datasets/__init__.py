@@ -15,6 +15,9 @@ import transforms.joint_transforms as joint_transforms
 import transforms.transforms as extended_transforms
 from torch.utils.data import DataLoader
 
+from torchvision import transforms
+from seg_utils.dataset_utils import dataset, split_dataset
+
 
 def setup_loaders(args):
     """
@@ -310,6 +313,14 @@ def setup_loaders(args):
     elif args.dataset == 'null_loader':
         train_set = args.dataset_cls.null_loader(args.crop_size)
         val_set = args.dataset_cls.null_loader(args.crop_size)
+    elif args.dataset == 'hyundai':
+        transform = transforms.Compose([
+        transforms.Resize((128, 128)),
+        transforms.ToTensor(),
+        ])
+
+        datasets = dataset('data', transform=transform)
+        train_set, val_set = split_dataset(datasets, args.split)
     else:
         raise Exception('Dataset {} is not supported'.format(args.dataset))
     

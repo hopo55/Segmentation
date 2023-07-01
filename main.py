@@ -53,11 +53,18 @@ def test(model, device, test_loader):
 
     model.eval()
     with torch.no_grad():
-        torch.cuda.synchronize()
-        torch.cuda.synchronize()
-        t_start = time.time()
+        # warm_up for latency calculation
+        rand_img = torch.rand(1, 3, 640, 640).to(device)
+        for _ in range(10):
+            _ = model(rand_img)
+
+        starter, ender = torch.cuda.Event(enable_timing=True), torch.cuda.Event(enable_timing=True)
 
         for batch_idx, (data, target) in enumerate(test_loader):
+            torch.cuda.synchronize()
+            torch.cuda.synchronize()
+            starter.record()
+
             data, target = data.to(device), target.to(device)
             target = target.unsqueeze(1)
 
@@ -71,24 +78,27 @@ def test(model, device, test_loader):
             ori_image = data * 255.0
             output_image = output * 255.0
 
-            ori_image[:, 0] = output_image
+            ori_image[:, 0] = output_image[:, 0]
 
             # 두 배열을 RGB 이미지로 결합
-            ori_image = TF.to_pil_image(ori_image.squeeze().byte(), mode='RGB')
-            ori_image.save("overlap/output_image" + str(batch_idx) + ".jpg")
+            for n, (ori_img, out_img) in enumerate(zip(ori_image, output_image)):
+                index = batch_idx * (len(ori_image))
+                ori_img = TF.to_pil_image(ori_img.squeeze().byte(), mode='RGB')
+                ori_img.save("overlap/output_image" + str(index + n) + ".jpg")
 
-            output_image = TF.to_pil_image(output_image.squeeze().byte(), mode='L')
-            output_image.save("results/output_image" + str(batch_idx) + ".jpg")
+                out_img = TF.to_pil_image(out_img.squeeze().byte(), mode='L')
+                out_img.save("results/output_image" + str(index + n) + ".jpg")
 
             acc.update(accuracy)
             iou.update(iou_value)
 
-        torch.cuda.synchronize()
-        torch.cuda.synchronize()
-        latency_time = time.time() - t_start    # μs ()
-        torch.cuda.empty_cache()
+            ender.record()
+            torch.cuda.synchronize()
+            torch.cuda.synchronize()
+            latency_time = starter.elapsed_time(ender) / data.size(0)    # μs ()
+            torch.cuda.empty_cache()
 
-        latency.update(latency_time, data.size(0))
+            latency.update(latency_time)
     
     sys.stdout.write('\r')
     sys.stdout.write("Test | Accuracy: %.4f, IoU: %.4f, Latency: %.2f\n" % (acc.avg, iou.avg, latency.avg))
@@ -103,13 +113,15 @@ parser.add_argument('--seed', type=int, default=0)
 parser.add_argument('--device', type=str, default='0')
 # Dataset Settings
 parser.add_argument('--root', type=str, default='train_data')
-parser.add_argument('--batch_size', type=int, default=512)
-parser.add_argument('--test_size', type=int, default=256)
+parser.add_argument('--mode', type=str, default='original', choices=['original', 'crop'])
+parser.add_argument('--input_size', nargs='+', type=int, default=[512, 512])
+parser.add_argument('--batch_size', type=int, default=8)
+parser.add_argument('--test_size', type=int, default=4)
 parser.add_argument('--num_workers', type=int, default=8)
 parser.add_argument('--split', type=int, default=0.8)
 # Model Settings
-parser.add_argument('--epoch', type=int, default=10)
-parser.add_argument('--lr', '--learning_rate', type=float, default=0.001)
+parser.add_argument('--epoch', type=int, default=30)
+parser.add_argument('--lr', '--learning_rate', type=float, default=0.01)
 
 args = parser.parse_args()
 
@@ -137,18 +149,19 @@ def main():
     model.to(device)
 
     transform = transforms.Compose([
-        transforms.Resize((128, 128)),
+        transforms.Resize(args.input_size),
         transforms.ToTensor(),
     ])
 
-    datasets = dataset(args.root, transform=transform)
+    datasets = dataset(args.root, args.mode, transform=transform)
     train_dataset, test_dataset = split_dataset(datasets, args.split)
 
-    train_loader = DataLoader(train_dataset, batch_size=4, shuffle=True, num_workers=args.num_workers)
-    test_loader = DataLoader(test_dataset, batch_size=1, shuffle=False, num_workers=args.num_workers)
+    train_loader = DataLoader(train_dataset, batch_size=args.batch_size, shuffle=True, num_workers=args.num_workers)
+    test_loader = DataLoader(test_dataset, batch_size=args.test_size, shuffle=False, num_workers=args.num_workers)
 
     loss = smp.losses.DiceLoss('binary')
-    optimizer = torch.optim.Adam(model.parameters(), lr=args.lr)
+    optimizer = torch.optim.SGD(model.parameters(), lr=args.lr, momentum=0.9, weight_decay=1e-5)
+    # optimizer = torch.optim.Adam(model.parameters(), lr=args.lr)
     lr_scheduler = torch.optim.lr_scheduler.CosineAnnealingWarmRestarts(optimizer, T_0=1, T_mult=2, eta_min=5e-5,)
 
     for epoch in range(1, args.epoch + 1):

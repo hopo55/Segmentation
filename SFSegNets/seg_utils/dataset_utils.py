@@ -9,24 +9,22 @@ from torch.utils.data import Dataset, DataLoader, Subset
 __all__ = ['dataset', 'split_dataset']
 
 class dataset(Dataset):
-    def __init__(self, root_dir, mode, transform=None):
+    def __init__(self, root_dir, transform=None):
         self.root_dir = root_dir
         self.transform = transform
 
         self.image_paths = []
         self.label_paths = []
 
-        target = 'ori_target' if mode == 'original' else 'target'
-
         # 하위 폴더 탐색하여 이미지 파일 경로 수집
         for root, _, files in os.walk(root_dir):
-            if mode in root:
+            if 'crop' in root:
                 for file in files:
                     if file.endswith(".tif"):
                         image_path = os.path.join(root, file)
                         self.image_paths.append(image_path)
             
-            if target == os.path.split(root)[-1]:
+            if 'target' in root:
                 for file in files:
                     if file.endswith(".tif"):
                         label_path = os.path.join(root, file)

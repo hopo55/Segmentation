@@ -21,6 +21,10 @@ import time
 import datetime
 import argparse
 
+from torchvision import transforms
+from seg_utils.dataset_utils import dataset, split_dataset
+
+
 ##### test
 logger = logging.getLogger()
 
@@ -93,19 +97,22 @@ def parse_args():
             '--respath',
             dest = 'respath',
             type = str,
-            default = None,
+            # default = None,
+            default = 'checkpoints/train_STDC1-Seg/',
             )
     parse.add_argument(
             '--backbone',
             dest = 'backbone',
             type = str,
-            default = 'CatNetSmall',
+            # default = 'CatNetSmall',
+            default = 'STDCNet813',
             )
     parse.add_argument(
             '--pretrain_path',
             dest = 'pretrain_path',
             type = str,
-            default = '',
+            # default = '',
+            default = 'checkpoints/STDCNet813M_73.91.tar',
             )
     parse.add_argument(
             '--use_conv_last',
@@ -129,7 +136,8 @@ def parse_args():
             '--use_boundary_8',
             dest = 'use_boundary_8',
             type = str2bool,
-            default = False,
+            # default = False,
+            default = True,
             )
     parse.add_argument(
             '--use_boundary_16',
@@ -186,24 +194,35 @@ def train():
         logger.info('mode: {}'.format(args.mode))
     
     
-    ds = CityScapes(dspth, cropsize=cropsize, mode=mode, randomscale=randomscale)
-    sampler = torch.utils.data.distributed.DistributedSampler(ds)
-    dl = DataLoader(ds,
-                    batch_size = n_img_per_gpu,
-                    shuffle = False,
-                    sampler = sampler,
-                    num_workers = n_workers_train,
-                    pin_memory = False,
-                    drop_last = True)
-    # exit(0)
-    dsval = CityScapes(dspth, mode='val', randomscale=randomscale)
-    sampler_val = torch.utils.data.distributed.DistributedSampler(dsval)
-    dlval = DataLoader(dsval,
-                    batch_size = 2,
-                    shuffle = False,
-                    sampler = sampler_val,
-                    num_workers = n_workers_val,
-                    drop_last = False)
+    # ds = CityScapes(dspth, cropsize=cropsize, mode=mode, randomscale=randomscale)
+    # sampler = torch.utils.data.distributed.DistributedSampler(ds)
+    # dl = DataLoader(ds,
+    #                 batch_size = n_img_per_gpu,
+    #                 shuffle = False,
+    #                 sampler = sampler,
+    #                 num_workers = n_workers_train,
+    #                 pin_memory = False,
+    #                 drop_last = True)
+    # # exit(0)
+    # dsval = CityScapes(dspth, mode='val', randomscale=randomscale)
+    # sampler_val = torch.utils.data.distributed.DistributedSampler(dsval)
+    # dlval = DataLoader(dsval,
+    #                 batch_size = 2,
+    #                 shuffle = False,
+    #                 sampler = sampler_val,
+    #                 num_workers = n_workers_val,
+    #                 drop_last = False)
+
+    transform = transforms.Compose([
+        transforms.Resize((128, 128)),
+        transforms.ToTensor(),
+    ])
+    
+    datasets = dataset(args.root, transform=transform)
+    train_dataset, test_dataset = split_dataset(datasets, args.split)
+
+    dl = DataLoader(train_dataset, batch_size=4, shuffle=True, num_workers=args.num_workers)
+    dlval = DataLoader(test_dataset, batch_size=1, shuffle=False, num_workers=args.num_workers)
 
     ## model
     ignore_idx = 255
@@ -268,7 +287,7 @@ def train():
             if not im.size()[0]==n_img_per_gpu: raise StopIteration
         except StopIteration:
             epoch += 1
-            sampler.set_epoch(epoch)
+            # sampler.set_epoch(epoch)
             diter = iter(dl)
             im, lb = next(diter)
         im = im.cuda()
