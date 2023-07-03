@@ -9,7 +9,8 @@ from torch.utils.data import Dataset, DataLoader, Subset
 __all__ = ['dataset', 'split_dataset']
 
 class dataset(Dataset):
-    def __init__(self, root_dir, mode, transform=None):
+    def __init__(self, args, root_dir, mode, transform=None):
+        self.args = args
         self.root_dir = root_dir
         self.transform = transform
 
@@ -39,8 +40,21 @@ class dataset(Dataset):
 
         # 전처리 적용
         if self.transform is not None:
-            image = self.transform(image)
-            label = self.transform(label)[0]
+            if self.args.model == 'ESPNet_Encoder':
+                print('ESPNet_Encoder')
+
+                label_transform = transforms.Compose([
+                    transforms.Resize((int(self.args.input_size[0]/8), int(self.args.input_size[1]/8))),
+                    transforms.ToTensor(), #scaleIn = 8
+                ])
+
+                image = self.transform(image)
+                label = label_transform(label)[0]
+
+            else:
+                print('ESPNet')
+                image = self.transform(image)
+                label = self.transform(label)[0]
 
         return image, label
 

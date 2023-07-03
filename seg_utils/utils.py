@@ -1,4 +1,6 @@
+import cv2
 import torch
+import numpy as np
 
 class AverageMeter (object):
     def __init__(self):
@@ -34,3 +36,27 @@ def accuracy(output, target, topk=(1,), test=False):
             correct_k = correct[:k].reshape(-1).float().sum(0, keepdim=True)
             res.append(correct_k.mul_(100.0 / batch_size))
         return res
+    
+class ToTensor(object):
+    '''
+    This class converts the data to tensor so that it can be processed by PyTorch
+    '''
+    def __init__(self, scale=1):
+        '''
+        :param scale: ESPNet-C's output is 1/8th of original image size, so set this parameter accordingly
+        '''
+        self.scale = scale # original images are 2048 x 1024
+
+    def __call__(self, image, label):
+
+        if self.scale != 1:
+            h, w = label.shape[:2]
+            image = cv2.resize(image, (int(w), int(h)))
+            label = cv2.resize(label, (int(w/self.scale), int(h/self.scale)), interpolation=cv2.INTER_NEAREST)
+
+        image = image.transpose((2,0,1))
+
+        image_tensor = torch.from_numpy(image).div(255)
+        label_tensor =  torch.LongTensor(np.array(label, dtype=np.int)) #torch.from_numpy(label)
+
+        return [image_tensor, label_tensor]
