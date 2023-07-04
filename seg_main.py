@@ -115,7 +115,7 @@ parser.add_argument('--device', type=str, default='0')
 # Dataset Settings
 parser.add_argument('--root', type=str, default='train_data')
 parser.add_argument('--mode', type=str, default='original', choices=['original', 'crop'])
-parser.add_argument('--input_size', nargs='+', type=int, default=[512, 512])
+parser.add_argument('--input_size', nargs='+', type=int, default=[512, 672])    # ori size = [512, 672] / crop size = [128, 128]
 parser.add_argument('--batch_size', type=int, default=8)
 parser.add_argument('--test_size', type=int, default=4)
 parser.add_argument('--num_workers', type=int, default=8)
