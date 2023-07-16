@@ -2,7 +2,9 @@ import os
 import random
 import numpy as np
 from PIL import Image
+import time
 
+import torch
 from torchvision import transforms
 from torch.utils.data import Dataset, DataLoader, Subset
 
@@ -33,6 +35,7 @@ class dataset(Dataset):
                         label_path = os.path.join(root, file)
                         self.label_paths.append(label_path)
 
+
     def __getitem__(self, index):
         # 이미지와 레이블 로드
         image = Image.open(self.image_paths[index])
@@ -50,10 +53,15 @@ class dataset(Dataset):
                 label = label_transform(label)[0]
 
             else:
+                start_time = time.time()
+
                 image = self.transform(image)
+
+                end_time = time.time() - start_time
+
                 label = self.transform(label)[0]
 
-        return image, label
+        return image, label, end_time
 
     def __len__(self):
         return len(self.image_paths)

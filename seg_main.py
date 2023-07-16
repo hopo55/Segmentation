@@ -18,9 +18,10 @@ def train(model, device, train_loader, optimizer, criterion, epoch):
     acc = AverageMeter()
     iou = AverageMeter()
     losses = AverageMeter()
+    crop_latency = AverageMeter()
 
     model.train()
-    for batch_idx, (data, target) in enumerate(train_loader):
+    for batch_idx, (data, target, crop) in enumerate(train_loader):
         data, target = data.to(device), target.to(device)
         target = target.unsqueeze(1)
 
@@ -39,18 +40,22 @@ def train(model, device, train_loader, optimizer, criterion, epoch):
         losses.update(loss)
         acc.update(accuracy)
         iou.update(iou_value)
+
+        crop = torch.mean(crop) * 1000
+        crop_latency.update(crop)
         
     sys.stdout.write('\r')
     sys.stdout.write('Epoch [%3d/%3d] loss: %.4f Accuracy: %.4f, IoU: %.4f\n' % (epoch, args.epoch, loss, acc.avg, iou.avg))
     sys.stdout.flush()
 
-    return loss.item(), acc.avg, iou.avg
+    return loss.item(), acc.avg, iou.avg, crop_latency.avg
 
 
 def test(model, device, test_loader):
     acc = AverageMeter()
     iou = AverageMeter()
     latency = AverageMeter()
+    crop_latency = AverageMeter()
 
     model.eval()
     with torch.no_grad():
@@ -61,7 +66,7 @@ def test(model, device, test_loader):
 
         starter, ender = torch.cuda.Event(enable_timing=True), torch.cuda.Event(enable_timing=True)
 
-        for batch_idx, (data, target) in enumerate(test_loader):
+        for batch_idx, (data, target, crop) in enumerate(test_loader):
             torch.cuda.synchronize()
             torch.cuda.synchronize()
             starter.record()
@@ -100,18 +105,20 @@ def test(model, device, test_loader):
             torch.cuda.empty_cache()
 
             latency.update(latency_time)
-    
+            crop = torch.mean(crop) * 1000
+            crop_latency.update(crop)
+
     sys.stdout.write('\r')
     sys.stdout.write("Test | Accuracy: %.4f, IoU: %.4f, Latency: %.2f\n" % (acc.avg, iou.avg, latency.avg))
     sys.stdout.flush()
 
-    return acc.avg, iou.avg, latency.avg
+    return acc.avg, iou.avg, latency.avg, crop_latency.avg
 
 
 parser = argparse.ArgumentParser()
 # General Settings
 parser.add_argument('--seed', type=int, default=0)
-parser.add_argument('--device', type=str, default='0')
+parser.add_argument('--device', type=str, default='1')
 # Dataset Settings
 parser.add_argument('--root', type=str, default='train_data')
 parser.add_argument('--mode', type=str, default='original', choices=['original', 'crop'])
@@ -128,6 +135,8 @@ parser.add_argument('--lr', '--learning_rate', type=float, default=0.001)
 args = parser.parse_args()
 
 def main():
+    torch.multiprocessing.set_start_method('spawn')
+
     device = 'cuda:' + args.device
     args.device = torch.device(device)
     torch.cuda.set_device(args.device)
@@ -143,6 +152,7 @@ def main():
     model.to(device)
 
     transform = transforms.Compose([
+        # transforms.RandomCrop((128, 128)),
         transforms.Resize(args.input_size),
         transforms.ToTensor(),
     ])
@@ -159,11 +169,14 @@ def main():
     lr_scheduler = torch.optim.lr_scheduler.CosineAnnealingWarmRestarts(optimizer, T_0=1, T_mult=2, eta_min=5e-5,)
 
     for epoch in range(1, args.epoch + 1):
-        train_loss, train_acc, train_iou = train(model, args.device, train_loader, optimizer, loss, epoch)
+        train_loss, train_acc, train_iou, train_crop = train(model, args.device, train_loader, optimizer, loss, epoch)
 
-    test_acc, test_iou, latency = test(model, args.device, test_loader)
+    test_acc, test_iou, latency, test_crop = test(model, args.device, test_loader)
     print("FPS:{:.2f}".format(1000./latency))
     print("Latency:{:.2f}ms / {:.4f}s".format(latency, (latency/1000.)))
+
+    print("Train Crop Latency:{:.2f}ms / {:.4f}s".format(train_crop, (train_crop/1000.)))
+    print("Train Crop Latency:{:.2f}ms / {:.4f}s".format(test_crop, (test_crop/1000.)))
 
 
 if __name__ == '__main__':
